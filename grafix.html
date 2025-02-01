@@ -228,7 +228,7 @@ th:nth-child(2) {
     </button>
 
     <div class="instruction-block">
-      <h2>График работников</h2>
+      <h2>График сотрудников</h2>
       <label for="weekSelector">Выберите неделю: </label>
       <input type="week" id="weekSelector" onchange="updateWeek()">
       <table id="scheduleTable">
@@ -236,14 +236,14 @@ th:nth-child(2) {
           <tr>
             <th>Дата</th>
             <th>День недели</th>
-            <th>Виолетта</th>
-            <th>Саша</th>
-            <th>Даша</th>
-            <th>Толик</th>
-            <th>Кирилл</th>
-            <th>Лиза</th>
-            <th>Ирина</th>
-            <th>Виктория</th>
+            <th>Сотрудник V</th>
+            <th>Сотрудник S</th>
+            <th>Сотрудник D</th>
+            <th>Сотрудник T</th>
+            <th>Сотрудник K</th>
+            <th>Сотрудник L</th>
+            <th>Сотрудник I</th>
+            <th>Сотрудник V</th>
           </tr>
         </thead>
         <tbody id="scheduleBody"></tbody>
@@ -268,7 +268,7 @@ th:nth-child(2) {
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
   <script>
-    const workers = ["Виолетта", "Саша", "Даша", "Толик", "Кирилл", "Лиза", "Ирина", "Виктория"];
+    const workers = ["Сотрудник VLT", "Сотрудник ALX", "Сотрудник DSH", "Сотрудник TLK", "Сотрудник KRLL", "Сотрудник LZ", "Сотрудник IRN", "Сотрудник VIK"];
     let selectedCells = new Set(); // Храним выделенные ячейки
 
     function updateWeek() {
