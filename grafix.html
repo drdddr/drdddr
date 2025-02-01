@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>График работников</title>
+  <style>
+    /* Стили для таблицы и ячеек */
+    td:nth-child(3) { background-color: rgba(255, 182, 193, 0.1); transition: background-color 0.3s ease; }
+    td:nth-child(4) { background-color: rgba(173, 216, 230, 0.1); transition: background-color 0.3s ease; }
+    td:nth-child(5) { background-color: rgba(152, 251, 152, 0.1); transition: background-color 0.3s ease; }
+    td:nth-child(6) { background-color: rgba(255, 239, 184, 0.2); transition: background-color 0.3s ease; }
+    td:nth-child(7) { background-color: rgba(221, 160, 221, 0.1); transition: background-color 0.3s ease; }
+    td:nth-child(8) { background-color: rgba(240, 230, 140, 0.1); transition: background-color 0.3s ease; }
+    td:nth-child(9) { background-color: rgba(176, 224, 230, 0.1); transition: background-color 0.3s ease; }
+    td:nth-child(10) { background-color: rgba(255, 218, 185, 0.1); transition: background-color 0.3s ease; }
+
+    /* Стили для страницы */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      transition: background-color 0.3s ease;
+    }
+    .container {
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+    .instruction-block {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 90%;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      margin-bottom: 20px;
+      overflow: auto;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.5s forwards;
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      opacity: 0;
+      transform: scale(0.95);
+      animation: fadeInScale 0.5s forwards;
+      overflow-x: auto;
+      display: block;
+      transition: all 0.3s ease;
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeOutScale {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.95); }
+    }
+
+    th, td {
+      padding: 15.3px;
+      text-align: center;
+      border: 1px solid #ddd;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+/* Стили для второго столбца (дни недели) */
+td:nth-child(2),
+th:nth-child(2) {
+  width: 60px; /* Задайте нужную ширину */
+  min-width: 60px; /* Минимальная ширина */
+  max-width: 60px; /* Максимальная ширина (опционально) */
+}
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+      transform: scale(1.05);
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Стили для выделенных ячеек */
+    td.selected {
+      background-color: rgba(0, 123, 255, 0.3) !important; /* Голубой цвет для выделения */
+      transition: background-color 0.3s ease;
+    }
+
+    /* Скрытие кнопки и выпадающего списка до выбора недели */
+    #applyButton, #timeSelector {
+      display: none; /* По умолчанию скрыты */
+      transition: opacity 0.3s ease;
+    }
+
+    /* Стили для кнопок-стрелок */
+    .nav-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-3%);
+  background: rgba(0, 0, 0, 0.3); /* Полупрозрачный фон */
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+  z-index: 10; /* Убедимся, что кнопки поверх других элементов */
+}
+
+.nav-button:hover {
+  background: rgba(0, 0, 0, 0.6); /* Изменение фона при наведении */
+}
+
+.prev-week {
+  left: 10px; /* Ближе к контейнеру */
+}
+
+.next-week {
+  right: 10px; /* Ближе к контейнеру */
+}
+
+/* Убедимся, что контейнер имеет position: relative */
+.container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+    /* Медиазапросы для мобильных устройств */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px; /* Меньший размер шрифта для мобильных устройств */
+      }
+
+      table {
+        font-size: 12px; /* Еще меньше шрифт для таблицы */
+      }
+
+      th, td {
+        padding: 8px; /* Уменьшаем отступы */
+      }
+
+      button {
+        padding: 8px 12px; /* Уменьшаем размер кнопки */
+      }
+      
+      #weekSelector {
+        width: 100%; /* Делаем поле выбора недели более удобным для мобильных */
+      }
+
+      .nav-button {
+        font-size: 18px; /* Уменьшаем размер стрелок для мобильных */
+        width: 30px;
+        height: 30px;
+      }
+
+      .prev-week {
+        left: -30px; /* Уменьшаем смещение для мобильных */
+      }
+
+      .next-week {
+        right: -30px; /* Уменьшаем смещение для мобильных */
+      }
+    }
+
+    @media (max-width: 480px) {
+      table {
+        font-size: 10px; /* Слишком маленькие экраны, уменьшаем шрифт */
+      }
+
+      th, td {
+        padding: 6px; /* Сильно уменьшаем отступы для маленьких экранов */
+      }
+
+      button {
+        width: 100%; /* Делаем кнопки растянутыми на всю ширину */
+      }
+
+      .container {
+        padding: 10px;
+      }
+
+      .instruction-block {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Кнопка "На прошлую неделю" -->
+    <button class="nav-button prev-week" onclick="goToPreviousWeek()">
+      &#10094; <!-- Иконка стрелки влево -->
+    </button>
+
+    <div class="instruction-block">
+      <h2>График работников</h2>
+      <label for="weekSelector">Выберите неделю: </label>
+      <input type="week" id="weekSelector" onchange="updateWeek()">
+      <table id="scheduleTable">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>День недели</th>
+            <th>Виолетта</th>
+            <th>Саша</th>
+            <th>Даша</th>
+            <th>Толик</th>
+            <th>Кирилл</th>
+            <th>Лиза</th>
+            <th>Ирина</th>
+            <th>Виктория</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleBody"></tbody>
+      </table>
+      <button onclick="saveToExcel()">Сохранить в Excel</button>
+      <button id="applyButton" onclick="applyToSelected()">Применить ко всем выделенным</button>
+      <select id="timeSelector">
+        <option value="09:30 - 21:30">09:30 - 21:30</option>
+        <option value="12:00 - 00:00">12:00 - 00:00</option>
+        <option value="13:00 - 01:00">13:00 - 01:00</option>
+        <option value="16:00 - 03:30">16:00 - 03:30</option>
+        <option value="Выходной">Выходной</option>
+        <option value="—">—</option>
+      </select>
+    </div>
+
+    <!-- Кнопка "На следующую неделю" -->
+    <button class="nav-button next-week" onclick="goToNextWeek()">
+      &#10095; <!-- Иконка стрелки вправо -->
+    </button>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+  <script>
+    const workers = ["Виолетта", "Саша", "Даша", "Толик", "Кирилл", "Лиза", "Ирина", "Виктория"];
+    let selectedCells = new Set(); // Храним выделенные ячейки
+
+    function updateWeek() {
+      const selectedWeek = document.getElementById("weekSelector").value;
+      if (!selectedWeek) return;
+
+      // Анимация исчезновения таблицы
+      const table = document.getElementById("scheduleTable");
+      table.style.animation = "fadeOutScale 0.3s forwards";
+
+      // Ждем завершения анимации исчезновения перед обновлением данных
+      setTimeout(() => {
+        const [year, week] = selectedWeek.split('-W');
+        
+        // Сокращенные названия дней недели
+        const daysOfWeekShort = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+
+        const scheduleBody = document.getElementById("scheduleBody");
+        scheduleBody.innerHTML = "";
+        const savedSchedule = JSON.parse(localStorage.getItem("schedule")) || {};
+        const weekKey = `week-${selectedWeek}`;
+        const savedColors = JSON.parse(localStorage.getItem("colors")) || {};
+
+        // Просто используем выбранную неделю, не изменяя дату, но сдвигаем на -1 день
+        for (let i = 0; i < 7; i++) {
+          let currentDate = new Date(year, 0, 1 + (week - 1) * 7 + i - 1); // Сдвигаем на -1 день
+
+          let dayOfWeekFormatted = daysOfWeekShort[i];  // Используем сокращенное название дня недели
+          let formattedDate = currentDate.toISOString().split('T')[0];  // Форматируем дату как YYYY-MM-DD
+          
+          const row = document.createElement("tr");
+          row.innerHTML = `<td>${formattedDate}</td><td>${dayOfWeekFormatted}</td>`;  // Отображаем дату и сокращенное название дня недели
+          workers.forEach(worker => {
+            let savedValue = savedSchedule[weekKey]?.[formattedDate]?.[worker] || "—";  // Используем "—" как значение по умолчанию
+            let savedColor = savedColors[formattedDate]?.[worker] || "";  // Извлекаем цвет ячейки
+
+            row.innerHTML += `<td style="background-color: ${savedColor}" onclick="toggleSelect(this)">
+                                <select onchange="updateSchedule('${weekKey}', '${formattedDate}', '${worker}', this.value, this)">
+                                  <option value="09:30 - 21:30" ${savedValue === "09:30 - 21:30" ? "selected" : ""}>09:30 - 21:30</option>
+                                  <option value="12:00 - 00:00" ${savedValue === "12:00 - 00:00" ? "selected" : ""}>12:00 - 00:00</option>
+                                  <option value="13:00 - 01:00" ${savedValue === "13:00 - 01:00" ? "selected" : ""}>13:00 - 01:00</option>
+                                  <option value="16:00 - 03:30" ${savedValue === "16:00 - 03:30" ? "selected" : ""}>16:00 - 03:30</option>
+                                  <option value="Выходной" ${savedValue === "Выходной" ? "selected" : ""}>Выходной</option>
+                                  <option value="—" ${savedValue === "—" ? "selected" : ""}>—</option>
+                                </select>
+                              </td>`;
+          });
+          scheduleBody.appendChild(row);
+        }
+
+        // Показываем кнопку и выпадающий список после выбора недели
+        document.getElementById("applyButton").style.display = "inline-block";
+        document.getElementById("timeSelector").style.display = "inline-block";
+
+        // Анимация появления таблицы
+        table.style.animation = "fadeInScale 0.5s forwards";
+      }, 300); // Задержка перед обновлением данных (время анимации исчезновения)
+    }
+
+    function toggleSelect(cell) {
+      if (cell.classList.contains("selected")) {
+        cell.classList.remove("selected");
+        selectedCells.delete(cell);
+      } else {
+        cell.classList.add("selected");
+        selectedCells.add(cell);
+      }
+    }
+
+    function applyToSelected() {
+      const selectedTime = document.getElementById("timeSelector").value;
+      selectedCells.forEach(cell => {
+        const select = cell.querySelector("select");
+        if (select) {
+          select.value = selectedTime;
+          select.dispatchEvent(new Event('change')); // Триггерим событие изменения
+        }
+      });
+
+      // Сбрасываем выделение после применения
+      selectedCells.forEach(cell => cell.classList.remove("selected"));
+      selectedCells.clear();
+    }
+
+   function updateSchedule(weekKey, date, worker, value, selectElement) {
+  const schedule = JSON.parse(localStorage.getItem("schedule")) || {};
+  if (!schedule[weekKey]) schedule[weekKey] = {};
+  if (!schedule[weekKey][date]) schedule[weekKey][date] = {};
+  schedule[weekKey][date][worker] = value;
+  localStorage.setItem("schedule", JSON.stringify(schedule));
+
+  // Устанавливаем цвет ячейки
+  const cell = selectElement.parentElement;
+  let color = "";
+
+  // Применяем цвет в зависимости от значения
+  if (value === "Выходной") {
+    color = "rgba(255, 0, 0, 0.3)";  // Красный для выходного
+  } else if (value === "09:30 - 21:30") {
+    color = "#e6f4ea";  // Светло-зелёный для 09:30 - 21:30
+  } else if (value === "12:00 - 00:00") {
+    color = "#c3e6cb";  // Зелёный для 12:00 - 00:00
+  } else if (value === "13:00 - 01:00") {
+    color = "#a2d9f7";  // Голубой для 13:00 - 01:00
+  } else if (value === "16:00 - 03:30") {
+    color = "#6c8ebf";  // Синий для 16:00 - 03:30
+  } else if (value === "—") {
+    color = "rgba(255, 255, 255, 0.3)";  // Белый для прочерка
+  }
+
+  // Сохраняем цвет ячейки в localStorage
+  const savedColors = JSON.parse(localStorage.getItem("colors")) || {};
+  if (!savedColors[date]) savedColors[date] = {};
+  savedColors[date][worker] = color;
+  localStorage.setItem("colors", JSON.stringify(savedColors));
+
+  // Применяем цвет ячейки
+  cell.style.backgroundColor = color;
+}
+
+    function saveToExcel() {
+      const table = document.getElementById("scheduleTable");
+      const rows = table.querySelectorAll("tr"); // Получаем все строки таблицы
+
+      const data = [];
+      
+      // Добавляем заголовки в первую строку данных
+      const headerRow = rows[0].querySelectorAll("th");
+      const headerData = [];
+      headerRow.forEach(header => {
+        headerData.push(header.textContent.trim());
+      });
+      data.push(headerData);
+
+      // Обрабатываем каждую строку
+      rows.forEach((row, rowIndex) => {
+        if (rowIndex === 0) return; // Пропускаем первую строку с заголовками
+
+        const rowData = [];
+        const cells = row.querySelectorAll("td"); // Получаем все ячейки строки
+        cells.forEach((cell, cellIndex) => {
+          // Получаем текстовое содержимое ячейки
+          let cellValue = cell.textContent.trim() || "";
+
+          // Если это ячейка с выпадающим списком, извлекаем выбранное значение
+          const select = cell.querySelector("select");
+          if (select) {
+            cellValue = select.value;
+          }
+
+          // Если значение пустое (например, прочерк), оставляем прочерк
+          if (cellValue === "") {
+            cellValue = "—";
+          }
+
+          rowData.push(cellValue);
+        });
+
+        data.push(rowData);
+      });
+
+      console.log("Data to save: ", data);  // Для отладки
+
+      // Создаем книгу Excel из данных
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Schedule");
+
+      // Записываем файл Excel
+      XLSX.writeFile(wb, "schedule.xlsx");
+    }
+
+    function goToPreviousWeek() {
+      const weekSelector = document.getElementById("weekSelector");
+      const currentWeek = weekSelector.value;
+      if (!currentWeek) return;
+
+      const [year, week] = currentWeek.split('-W');
+      let previousWeek = parseInt(week) - 1;
+      let previousYear = year;
+
+      if (previousWeek < 1) {
+        previousWeek = 52;
+        previousYear = parseInt(year) - 1;
+      }
+
+      const newWeek = `${previousYear}-W${String(previousWeek).padStart(2, '0')}`;
+      weekSelector.value = newWeek;
+      updateWeek();
+    }
+
+    function goToNextWeek() {
+      const weekSelector = document.getElementById("weekSelector");
+      const currentWeek = weekSelector.value;
+      if (!currentWeek) return;
+
+      const [year, week] = currentWeek.split('-W');
+      let nextWeek = parseInt(week) + 1;
+      let nextYear = year;
+
+      if (nextWeek > 52) {
+        nextWeek = 1;
+        nextYear = parseInt(year) + 1;
+      }
+
+      const newWeek = `${nextYear}-W${String(nextWeek).padStart(2, '0')}`;
+      weekSelector.value = newWeek;
+      updateWeek();
+    }
+
+    // Инициализация
+    document.addEventListener("DOMContentLoaded", () => {
+      updateWeek();  // Обновить таблицу после загрузки
+    });
+  </script>
+</body>
+</html>
